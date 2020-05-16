@@ -42,6 +42,7 @@ import java.util.Set;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
+    int txPower=-50;
     TextView rssi_view;
     String rssi_str="";
     BluetoothAdapter BTAdapter;
@@ -83,11 +84,36 @@ public class MainActivity extends AppCompatActivity {
         rssi_view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                String str =txt_data.getText().toString();
+                if(!str.equals("")){
+                    Integer txp=Integer.parseInt(str);
+                    if(txp!=null && txp>=-127 && txp <=126){
+                        txPower=txp;
+                        Toast.makeText(getApplicationContext(),txp+"",Toast.LENGTH_LONG).show();
+                    }
+                }
+
 //                BTAdapter.cancelDiscovery();
 //                BTAdapter.startDiscovery();
 
             }
         });
+//        txt_data.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+//            @Override
+//            public void onFocusChange(View view, boolean b) {
+//                if(!b){
+//                    String str =((EditText)view).getText().toString();
+//                    Toast.makeText(getApplicationContext(),str,Toast.LENGTH_LONG).show();
+//                    if(!str.equals("")){
+//                        Integer txp=Integer.parseInt(str);
+//                        if(txp!=null && txp>=-127 && txp <=126){
+//                            txPower=txp;
+//                            Toast.makeText(getApplicationContext(),txp+"",Toast.LENGTH_LONG).show();
+//                        }
+//                    }
+//                }
+//            }
+//        });
 
         if( !BTAdapter.isMultipleAdvertisementSupported() ) {
             Toast.makeText( this, "Multiple advertisement not supported", Toast.LENGTH_SHORT ).show();
@@ -97,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Advertising
         final AdvertiseSettings settings = new AdvertiseSettings.Builder()
-                .setAdvertiseMode( AdvertiseSettings.ADVERTISE_MODE_LOW_POWER )
+                .setAdvertiseMode( AdvertiseSettings.ADVERTISE_MODE_BALANCED )
                 .setTxPowerLevel( AdvertiseSettings.ADVERTISE_TX_POWER_HIGH)
                 .setConnectable( false )
                 .build();
@@ -110,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
                 .build();
         filters.add( filter1);
         ScanSettings settings1 = new ScanSettings.Builder()
-                .setScanMode( ScanSettings.SCAN_MODE_LOW_POWER )
+                .setScanMode( ScanSettings.SCAN_MODE_BALANCED )
                 .build();
 
         mBluetoothLeScanner.startScan(filters,settings1 ,mScanCallback);
@@ -173,7 +199,7 @@ public class MainActivity extends AppCompatActivity {
             if(android.os.Build.VERSION.SDK_INT>=26){
                 str=str+result.getTxPower()+": ";
             }
-            double distance=Math.round(calculateDistance(result.getRssi()) * 10000.0) / 10000.0;
+            double distance=Math.round(calculateDistance(result.getRssi()) * 100.0) / 100.0;
             str =str+distance;
 //            StringBuilder builder = new StringBuilder( result.getDevice().getName() );
 //            builder.append("\n").append(new String(result.getScanRecord().getServiceData(result.getScanRecord().getServiceUuids().get(0)), Charset.forName("UTF-8")));
@@ -218,21 +244,26 @@ public class MainActivity extends AppCompatActivity {
         }
     };
     public double  calculateDistance(int rssi) {
+//        RSSI = -10 n log d + A
+//        d = distance
+//        A = txPower
+//        n = signal propagation constant
+//        RSSI = dBm
+        return Math.pow(10, ((double) txPower - rssi) / (10 * 2));
+        //int txPower = 127; //hard coded power value. Usually ranges between -59 to -65
 
-        int txPower = 127; //hard coded power value. Usually ranges between -59 to -65
-
-        if (rssi == 0) {
-            return -1.0;
-        }
-
-        double ratio = rssi*1.0/txPower;
-        if (ratio < 1.0) {
-            return Math.pow(ratio,10);
-        }
-        else {
-            double distance =  (0.89976)*Math.pow(ratio,7.7095) + 0.111;
-            return distance;
-        }
+//        if (rssi == 0) {
+//            return -1.0;
+//        }
+//
+//        double ratio = rssi*1.0/txPower;
+//        if (ratio < 1.0) {
+//            return Math.pow(ratio,10);
+//        }
+//        else {
+//            double distance =  (0.89976)*Math.pow(ratio,7.7095) + 0.111;
+//            return distance;
+//        }
     }
     public void updateUI(final String str) {
         MainActivity.this.runOnUiThread(new Runnable() {

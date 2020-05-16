@@ -40,8 +40,8 @@
         android:layout_marginTop="32dp"
         android:layout_marginEnd="8dp"
         android:ems="10"
-        android:inputType="textPersonName"
-        android:text="Data"
+        android:hint="Enter rssi at 1m distance"
+        android:inputType="numberSigned"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
